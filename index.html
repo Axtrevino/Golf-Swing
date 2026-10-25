@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14392b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Swing Lab</title>
+<style>
+:root{
+  --turf:#14392b; --chalk:#f3f5f0; --sage:#e9eee8; --ink:#16211b; --mute:#5c6b62;
+  --line:#cdd6cd; --me:#1f7a4d; --ref:#d9531e; --ok:#1f7a4d; --warn:#b7791f; --bad:#c0392b;
+  --serif: "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans: ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--sage);color:var(--ink);font:16px/1.45 var(--sans);
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+header{background:var(--turf);color:var(--chalk);padding:14px 18px;display:flex;align-items:baseline;gap:10px}
+header h1{font:600 22px var(--serif);margin:0;letter-spacing:.2px}
+header span{font-size:13px;opacity:.7}
+main{max-width:980px;margin:0 auto;padding:16px}
+h2{font:600 19px var(--serif);margin:0 0 10px}
+.grid{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+@media (max-width:700px){.grid{grid-template-columns:1fr}}
+.card{background:var(--chalk);border:1px solid var(--line);border-radius:6px;padding:16px}
+.wide{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+label{font-size:14px;color:var(--mute);display:flex;flex-direction:column;gap:4px}
+label.chk{flex-direction:row;align-items:center;gap:8px;margin-top:12px;color:var(--ink)}
+select,input[type=range]{font:inherit}
+select{padding:8px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink)}
+.file{display:block;cursor:pointer}
+.file input{position:absolute;opacity:0;width:1px;height:1px}
+.file span{display:block;padding:18px;border:1.5px dashed var(--mute);border-radius:4px;text-align:center;color:var(--ink);background:#fff}
+.file input:focus-visible+span{outline:3px solid var(--me)}
+.file.has span{border-style:solid;border-color:var(--me);color:var(--me);font-weight:600}
+.hint{font-size:13px;color:var(--mute);margin:10px 0 0}
+.btn{font:600 15px var(--sans);padding:10px 16px;border-radius:4px;border:1px solid var(--turf);background:var(--chalk);color:var(--turf);cursor:pointer;min-height:42px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--turf);color:var(--chalk)}
+.btn:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--me);outline-offset:2px}
+.err{color:var(--bad);margin:0;font-weight:600}
+#prog{flex:1;min-width:220px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--me)}
+#progT{font-size:13px;color:var(--mute)}
+.stagewrap{background:#000;border-radius:6px;overflow:hidden}
+canvas{display:block;width:100%;height:auto;max-height:70vh;margin:0 auto;object-fit:contain}
+.ctl{display:flex;gap:8px;align-items:center;margin:10px 0}
+.ctl input[type=range]{flex:1;accent-color:var(--turf)}
+.ctl .t{font-variant-numeric:tabular-nums;font-size:13px;color:var(--mute);min-width:48px;text-align:right}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:600 14px var(--sans);padding:8px 12px;border-radius:999px;border:1px solid var(--turf);background:var(--chalk);color:var(--turf);cursor:pointer}
+.chip.at{background:var(--turf);color:var(--chalk)}
+.chip.sel{box-shadow:0 0 0 3px rgba(31,122,77,.35)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0;font-size:14px}
+.tools .seg{display:inline-flex;border:1px solid var(--turf);border-radius:4px;overflow:hidden}
+.tools .seg button{border:0;background:var(--chalk);color:var(--turf);padding:8px 12px;font:600 14px var(--sans);cursor:pointer}
+.tools .seg button.on{background:var(--turf);color:var(--chalk)}
+.tools label{flex-direction:row;align-items:center;gap:6px;color:var(--ink)}
+.legend{display:flex;gap:14px;font-size:13px;margin:8px 0}
+.legend b{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+table{width:100%;border-collapse:collapse;margin-top:6px;background:var(--chalk);border:1px solid var(--line)}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:14px}
+th{font:600 13px var(--sans);color:var(--mute)}
+td small{display:block;color:var(--mute);font-size:12px}
+td.v{font:600 16px var(--serif);font-variant-numeric:tabular-nums}
+td.v.ok{color:var(--ok)} td.v.low,td.v.high{color:var(--bad)} td.v.na{color:var(--mute)}
+td.r{color:var(--ref);font-weight:600;font-variant-numeric:tabular-nums}
+td.rg{color:var(--mute);font-variant-numeric:tabular-nums}
+.fb{margin:14px 0 6px;padding:0;list-style:none}
+.fb li{padding:10px 12px;border-left:4px solid var(--bad);background:var(--chalk);margin-bottom:8px;font-size:14px}
+.fb li.good{border-color:var(--ok)}
+.note{font-size:12.5px;color:var(--mute);margin:10px 0 0}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header><h1>Swing Lab</h1><span>MVP · análisis de swing en tu dispositivo</span></header>
+<main>
+
+<section id="setup" class="grid">
+  <div class="card">
+    <h2>Mi swing</h2>
+    <label class="file" id="lMe"><input id="fMe" type="file" accept="video/*"><span id="nMe">Elegir video</span></label>
+    <div class="row">
+      <label>Vista
+        <select id="view">
+          <option value="face">De frente (face-on)</option>
+          <option value="dtl">Por detrás (línea de tiro)</option>
+        </select>
+      </label>
+      <label>Mano
+        <select id="hand"><option value="R">Diestro</option><option value="L">Zurdo</option></select>
+      </label>
+    </div>
+    <p class="hint">Un solo swing por video, cámara fija, cuerpo completo en cuadro. Si puedes, grábalo en cámara lenta.</p>
+  </div>
+  <div class="card">
+    <h2>Referencia pro <small style="font:13px var(--sans);color:var(--mute)">(opcional)</small></h2>
+    <label class="file" id="lRef"><input id="fRef" type="file" accept="video/*"><span id="nRef">Elegir video del pro</span></label>
+    <label class="chk"><input type="checkbox" id="mirror"> Espejar la referencia (pro y tú con distinta mano)</label>
+    <p class="hint">Debe tener el mismo ángulo de cámara que el tuyo y un solo swing.</p>
+  </div>
+  <div class="card wide">
+    <label>Muestreo
+      <select id="fps">
+        <option value="30">30 por segundo (rápido)</option>
+        <option value="60" selected>60 por segundo</option>
+        <option value="120">120 por segundo (lento, más preciso)</option>
+      </select>
+    </label>
+    <button id="go" class="btn primary" disabled>Analizar</button>
+    <div id="prog" hidden><div class="bar"><i id="barI"></i></div><span id="progT"></span></div>
+    <p id="err" class="err" role="alert"></p>
+  </div>
+</section>
+
+<section id="stage" hidden>
+  <div class="stagewrap"><canvas id="cv"></canvas></div>
+  <div class="legend"><span><b style="background:#35e0ff"></b>Tú</span><span id="legRef"><b style="background:#ff7a1a"></b>Referencia</span></div>
+  <div class="ctl">
+    <button id="play" class="btn" aria-label="Reproducir o pausar">▶</button>
+    <button id="prev" class="btn" aria-label="Cuadro anterior">◀|</button>
+    <button id="next" class="btn" aria-label="Cuadro siguiente">|▶</button>
+    <input id="seek" type="range" min="0" max="1" step="0.001" value="0" aria-label="Posición del video">
+    <span class="t" id="tm">0.00s</span>
+    <select id="rate" aria-label="Velocidad">
+      <option value="0.1">0.1×</option><option value="0.25" selected>0.25×</option><option value="0.5">0.5×</option><option value="1">1×</option>
+    </select>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="tools">
+    <span>Ajustar fase seleccionada:</span>
+    <span class="seg" id="tgt"><button data-t="me" class="on">Mi video</button><button data-t="ref" id="tgtRef">Referencia</button></span>
+    <button class="btn" id="n-" aria-label="Retroceder un cuadro la fase">−1</button>
+    <button class="btn" id="n+" aria-label="Avanzar un cuadro la fase">+1</button>
+    <button class="btn" id="mark">Marcar aquí</button>
+  </div>
+  <div class="tools" id="refTools" hidden>
+    <label>Opacidad del pro <input id="op" type="range" min="0" max="100" value="50"></label>
+    <label><input type="checkbox" id="showRef" checked> Mostrar video del pro</label>
+  </div>
+  <div class="tools"><label><input type="checkbox" id="skel" checked> Mostrar esqueleto</label></div>
+
+  <div id="metrics"></div>
+  <ul class="fb" id="fb"></ul>
+  <p class="note">Los rangos son orientativos y no están validados por un coach: edítalos en <code>METRICS</code> dentro del código. Los ángulos salen de video 2D, así que son aproximados; la cara del palo y la trayectoria no se pueden medir con este método.</p>
+  <p><button class="btn" id="again">Cargar otros videos</button></p>
+</section>
+</main>
+
+<script type="module">
+const $ = s => document.querySelector(s);
+const CDN = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/";
+const MODEL = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task";
+
+const PH = ['address','takeaway','top','impact','finish'];
+const PL = {address:'Address', takeaway:'Backswing', top:'Top', impact:'Impacto', finish:'Finish'};
+const CONN = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28],[27,31],[28,32],[0,7],[0,8]];
+
+const S = { me:null, ref:null, sel:'top', tgt:'me', T:null, k:1, dragging:false };
+const cv = $('#cv'), ctx = cv.getContext('2d');
+
+/* ---------- carga de archivos ---------- */
+for (const [inp, lab, name, dflt] of [['#fMe','#lMe','#nMe','Elegir video'],['#fRef','#lRef','#nRef','Elegir video del pro']]) {
+  $(inp).onchange = () => {
+    const f = $(inp).files[0];
+    $(name).textContent = f ? f.name : dflt;
+    $(lab).classList.toggle('has', !!f);
+    $('#go').disabled = !$('#fMe').files[0];
+  };
+}
+const err = m => $('#err').textContent = m || '';
+const setProg = (p, t) => { $('#prog').hidden = false; $('#barI').style.width = Math.round(p*100)+'%'; $('#progT').textContent = t + (p>0 ? ' ' + Math.round(p*100) + '%' : ''); };
+
+/* ---------- modelo de pose (MediaPipe) ---------- */
+let landmarker = null;
+async function getLandmarker() {
+  if (landmarker) return landmarker;
+  const mod = await import(CDN + "vision_bundle.mjs");
+  const fileset = await mod.FilesetResolver.forVisionTasks(CDN + "wasm");
+  const mk = d => mod.PoseLandmarker.createFromOptions(fileset, { baseOptions:{ modelAssetPath: MODEL, delegate: d }, runningMode:"IMAGE", numPoses:1 });
+  try { landmarker = await mk("GPU"); } catch (e) { landmarker = await mk("CPU"); }
+  return landmarker;
+}
+
+function loadVideo(file) {
+  return new Promise((res, rej) => {
+    const v = document.createElement('video');
+    v.muted = true; v.playsInline = true; v.preload = 'auto'; v.setAttribute('playsinline','');
+    v.style.cssText = 'position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
+    document.body.appendChild(v);
+    v.onloadeddata = () => res(v);
+    v.onerror = () => rej(new Error('No pude leer ese video. Prueba con un .mp4 o .mov.'));
+    v.src = URL.createObjectURL(file);
+  });
+}
+function seek(v, t) {
+  return new Promise(r => {
+    if (Math.abs(v.currentTime - t) < 1e-4) return r();
+    let done = false;
+    const fin = () => { if (done) return; done = true; v.removeEventListener('seeked', fin); r(); };
+    v.addEventListener('seeked', fin);
+    setTimeout(fin, 3000);
+    v.currentTime = t;
+  });
+}
+
+async function analyze(v, step, label) {
+  const lm = await getLandmarker();
+  const dur = v.duration, n = Math.floor(dur / step);
+  const samples = []; let last = null;
+  for (let i = 0; i <= n; i++) {
+    const t = Math.min(i * step, dur - 0.001);
+    await seek(v, t);
+    const r = lm.detect(v);
+    const p = r.landmarks && r.landmarks[0];
+    if (p) last = p;
+    samples.push({ t, lm: last });
+    if (i % 2 === 0) { setProg(i / n, label); await new Promise(r => setTimeout(r)); }
+  }
+  const first = samples.find(s => s.lm);
+  if (!first) throw new Error('No detecté a ninguna persona en el video. Asegúrate de que se vea el cuerpo completo.');
+  for (const s of samples) { if (!s.lm) s.lm = first.lm; else break; }
+  return samples;
+}
+
+/* ---------- geometría ---------- */
+const pt = (m, i, k) => ({ x: m.samples[i].lm[k].x * m.W, y: m.samples[i].lm[k].y * m.H });
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+const ang = (a, b, c) => {
+  const v1 = { x: a.x - b.x, y: a.y - b.y }, v2 = { x: c.x - b.x, y: c.y - b.y };
+  const d = (v1.x * v2.x + v1.y * v2.y) / ((Math.hypot(v1.x, v1.y) * Math.hypot(v2.x, v2.y)) || 1);
+  return Math.acos(Math.max(-1, Math.min(1, d))) * 180 / Math.PI;
+};
+const SIDE = m => m.hand === 'R'
+  ? { lead:{sh:11,hp:23,kn:25,an:27}, trail:{sh:12,hp:24,kn:26,an:28} }
+  : { lead:{sh:12,hp:24,kn:26,an:28}, trail:{sh:11,hp:23,kn:25,an:27} };
+
+/* ---------- detección de fases (heurística) ---------- */
+function detectPhases(m) {
+  const S_ = m.samples, n = S_.length, dt = m.step;
+  const sm = a => a.map((_, i) => { let c = 0, t = 0; for (let k = -2; k <= 2; k++) { const j = i + k; if (j >= 0 && j < n) { t += a[j]; c++; } } return t / c; });
+  const Y = sm(S_.map(s => (s.lm[15].y + s.lm[16].y) / 2 * m.H));
+  const X = sm(S_.map(s => (s.lm[15].x + s.lm[16].x) / 2 * m.W));
+  const HY = S_.map(s => (s.lm[23].y + s.lm[24].y) / 2 * m.H);
+  const SP = sm(Y.map((_, i) => i === 0 ? 0 : Math.hypot(X[i] - X[i-1], Y[i] - Y[i-1]) / dt));
+  let iImp = 0; for (let i = 1; i < n; i++) if (SP[i] > SP[iImp]) iImp = i;
+  const peak = SP[iImp];
+  let iStart = 0; for (let i = 0; i < iImp; i++) if (SP[i] > 0.10 * peak) { iStart = i; break; }
+  const iAddr = Math.max(0, iStart - Math.round(0.15 / dt));
+  let iTop = iStart; for (let i = iStart; i <= iImp; i++) if (Y[i] < Y[iTop]) iTop = i;
+  let iTk = -1; for (let i = iAddr + 1; i < iTop; i++) if (Y[i] <= HY[i]) { iTk = i; break; }
+  if (iTk < 0) iTk = Math.round((iAddr + iTop) / 2);
+  let iFin = n - 1; for (let i = iImp + Math.round(0.15 / dt); i < n; i++) if (SP[i] < 0.10 * peak) { iFin = i; break; }
+  const ph = { address:iAddr, takeaway:iTk, top:iTop, impact:iImp, finish:iFin };
+  for (let j = 1; j < PH.length; j++) ph[PH[j]] = Math.min(n - 1, Math.max(ph[PH[j]], ph[PH[j-1]] + 1));
+  return ph;
+}
+
+/* ---------- métricas (rangos orientativos, edítalos) ---------- */
+const spine = (m, i) => { const sh = mid(pt(m,i,11), pt(m,i,12)), hp = mid(pt(m,i,23), pt(m,i,24)); return Math.atan2(Math.abs(sh.x - hp.x), hp.y - sh.y) * 180 / Math.PI; };
+const turn = (m, i, a, b) => { const a0 = m.phases.address; const w = dist(pt(m,i,a), pt(m,i,b)), w0 = dist(pt(m,a0,a), pt(m,a0,b)); return Math.acos(Math.min(1, w / w0)) * 180 / Math.PI; };
+const head = (m, i) => mid(pt(m,i,7), pt(m,i,8));
+const sway = (m, i) => {
+  const a = m.phases.address, s = SIDE(m);
+  const dir = Math.sign(pt(m,a,s.trail.hp).x - pt(m,a,s.lead.hp).x) || 1;
+  const sw = dist(pt(m,a,11), pt(m,a,12));
+  return (head(m,i).x - head(m,a).x) * dir / sw * 100;
+};
+const METRICS = [
+  { id:'spine_a', view:'dtl', phase:'address', name:'Inclinación de columna', unit:'°', lo:25, hi:45,
+    fn:(m,i)=>spine(m,i), low:'Estás muy erguido en el address: inclínate más desde las caderas.', high:'Demasiada inclinación en el address: sube un poco el torso.' },
+  { id:'knee_a', view:'both', phase:'address', name:'Rodilla adelantada (ángulo)', unit:'°', lo:145, hi:172,
+    fn:(m,i)=>{ const s=SIDE(m).lead; return ang(pt(m,i,s.hp), pt(m,i,s.kn), pt(m,i,s.an)); },
+    low:'Rodillas muy flexionadas en el address.', high:'Piernas muy rectas en el address: flexiona un poco las rodillas.' },
+  { id:'sh_top', view:'face', phase:'top', name:'Giro de hombros (aprox.)', unit:'°', lo:70, hi:110,
+    fn:(m,i)=>turn(m,i,11,12), low:'Giro de hombros corto en el top.', high:'Giro de hombros excesivo en el top.' },
+  { id:'hip_top', view:'face', phase:'top', name:'Giro de caderas (aprox.)', unit:'°', lo:30, hi:60,
+    fn:(m,i)=>turn(m,i,23,24), low:'Poco giro de caderas en el top.', high:'Mucho giro de caderas en el top: puede restar torsión.' },
+  { id:'sway_top', view:'face', phase:'top', name:'Desplazamiento de cabeza', unit:'% hombros', lo:-25, hi:25,
+    fn:sway, low:'La cabeza se movió hacia el lado del objetivo en el backswing.', high:'La cabeza se desplazó mucho hacia atrás (sway) en el backswing.' },
+  { id:'sway_imp', view:'face', phase:'impact', name:'Desplazamiento de cabeza', unit:'% hombros', lo:-25, hi:25,
+    fn:sway, low:'La cabeza terminó hacia el objetivo en el impacto.', high:'La cabeza quedó muy atrás en el impacto.' },
+  { id:'spine_d', view:'dtl', phase:'impact', name:'Cambio de columna vs address', unit:'°', lo:-8, hi:8,
+    fn:(m,i)=>spine(m,i)-spine(m,m.phases.address), low:'Perdiste inclinación de la columna hacia el impacto (posible extensión temprana).', high:'Te agachaste más entre el address y el impacto.' },
+];
+function computeMetrics(m) {
+  const out = {};
+  for (const M of METRICS) {
+    if (M.view !== 'both' && M.view !== S.me.view) continue;
+    try { out[M.id] = M.fn(m, m.phases[M.phase]); } catch (e) { out[M.id] = null; }
+  }
+  return out;
+}
+const fmt = (v, u) => (v == null || !isFinite(v)) ? '–' : Math.round(v) + (u === '°' ? '°' : ' ' + u);
+
+function syncRefHand() {
+  if (!S.ref) return;
+  const other = S.me.hand === 'R' ? 'L' : 'R';
+  S.ref.hand = $('#mirror').checked ? other : S.me.hand;
+}
+function renderMetrics() {
+  if (!S.me) return;
+  syncRefHand();
+  const a = computeMetrics(S.me), b = S.ref ? computeMetrics(S.ref) : null;
+  let rows = '', fb = [];
+  for (const M of METRICS) {
+    if (M.view !== 'both' && M.view !== S.me.view) continue;
+    const v = a[M.id];
+    let st = 'na';
+    if (v != null && isFinite(v)) { st = v < M.lo ? 'low' : v > M.hi ? 'high' : 'ok'; if (st !== 'ok') fb.push(M[st]); }
+    rows += `<tr><td>${M.name}<small>${PL[M.phase]}</small></td><td class="v ${st}">${fmt(v, M.unit)}</td>${b ? `<td class="r">${fmt(b[M.id], M.unit)}</td>` : ''}<td class="rg">${M.lo}–${M.hi}${M.unit==='°'?'°':''}</td></tr>`;
+  }
+  $('#metrics').innerHTML = `<table><thead><tr><th>Medida</th><th>Tú</th>${b ? '<th>Pro</th>' : ''}<th>Rango</th></tr></thead><tbody>${rows}</tbody></table>`;
+  $('#fb').innerHTML = fb.length
+    ? fb.map(t => `<li>${t}</li>`).join('')
+    : '<li class="good">Todas las medidas están dentro de los rangos. Revisa el video cuadro a cuadro: los rangos son amplios.</li>';
+}
+
+/* ---------- alineación y sincronización con la referencia ---------- */
+function align() {
+  if (!S.ref) { S.T = null; return; }
+  const a = S.me, b = S.ref;
+  const ia = a.phases.address, ib = b.phases.address;
+  const ha = mid(pt(a,ia,23), pt(a,ia,24)), hb = mid(pt(b,ib,23), pt(b,ib,24));
+  const sa = mid(pt(a,ia,11), pt(a,ia,12)), sb = mid(pt(b,ib,11), pt(b,ib,12));
+  S.T = { s: dist(sa, ha) / (dist(sb, hb) || 1), mx: ha.x, my: ha.y, rx: hb.x, ry: hb.y };
+}
+function mapTime(t) {
+  const A = PH.map(k => S.me.samples[S.me.phases[k]].t), B = PH.map(k => S.ref.samples[S.ref.phases[k]].t);
+  let r;
+  if (t <= A[0]) r = B[0] + (t - A[0]);
+  else if (t > A[A.length-1]) r = B[B.length-1] + (t - A[A.length-1]);
+  else { r = B[B.length-1]; for (let i = 1; i < A.length; i++) if (t <= A[i]) { const u = (t - A[i-1]) / ((A[i] - A[i-1]) || 1); r = B[i-1] + u * (B[i] - B[i-1]); break; } }
+  return Math.max(0, Math.min(S.ref.dur - 0.01, r));
+}
+const idxAt = (m, t) => Math.max(0, Math.min(m.samples.length - 1, Math.round(t / m.step)));
+
+/* ---------- dibujo ---------- */
+function drawSk(m, i, color, tf) {
+  const pts = m.samples[i].lm.map(l => tf({ x: l.x * m.W, y: l.y * m.H }));
+  const lw = Math.max(2, S.me.W / 260);
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = lw; ctx.lineCap = 'round';
+  for (const [a, b] of CONN) { ctx.beginPath(); ctx.moveTo(pts[a].x, pts[a].y); ctx.lineTo(pts[b].x, pts[b].y); ctx.stroke(); }
+  for (const k of [0,11,12,13,14,15,16,23,24,25,26,27,28]) { ctx.beginPath(); ctx.arc(pts[k].x, pts[k].y, lw * 1.2, 0, 7); ctx.fill(); }
+}
+let lastUI = 0;
+function frame() {
+  requestAnimationFrame(frame);
+  const me = S.me; if (!me || $('#stage').hidden) return;
+  const t = me.video.currentTime;
+  ctx.setTransform(S.k, 0, 0, S.k, 0, 0);
+  ctx.clearRect(0, 0, me.W, me.H);
+  ctx.drawImage(me.video, 0, 0, me.W, me.H);
+  const ref = S.ref, T = S.T;
+  let rt = 0, flip = 1;
+  if (ref && T) {
+    rt = mapTime(t); flip = $('#mirror').checked ? -1 : 1;
+    if (Math.abs(ref.video.currentTime - rt) > 0.004) ref.video.currentTime = rt;
+    if ($('#showRef').checked) {
+      ctx.save(); ctx.globalAlpha = +$('#op').value / 100;
+      ctx.translate(T.mx, T.my); ctx.scale(flip * T.s, T.s); ctx.translate(-T.rx, -T.ry);
+      ctx.drawImage(ref.video, 0, 0, ref.W, ref.H); ctx.restore();
+    }
+  }
+  if ($('#skel').checked) {
+    drawSk(me, idxAt(me, t), '#35e0ff', p => p);
+    if (ref && T) drawSk(ref, idxAt(ref, rt), '#ff7a1a', p => ({ x: T.mx + flip * T.s * (p.x - T.rx), y: T.my + T.s * (p.y - T.ry) }));
+  }
+  const now = performance.now();
+  if (now - lastUI > 60) {
+    lastUI = now;
+    if (!S.dragging) $('#seek').value = t;
+    $('#tm').textContent = t.toFixed(2) + 's';
+    const i = idxAt(me, t);
+    document.querySelectorAll('.chip').forEach(c => {
+      const k = c.dataset.k;
+      c.classList.toggle('sel', k === S.sel);
+      c.classList.toggle('at', Math.abs(me.phases[k] - i) <= 1);
+    });
+  }
+}
+
+/* ---------- controles ---------- */
+function jumpTo(k) { const v = S.me.video; v.pause(); v.currentTime = S.me.samples[S.me.phases[k]].t; }
+function onPhaseChange() { align(); renderMetrics(); }
+function buildChips() {
+  $('#chips').innerHTML = PH.map(k => `<button class="chip" data-k="${k}">${PL[k]}</button>`).join('');
+  document.querySelectorAll('.chip').forEach(c => c.onclick = () => { S.sel = c.dataset.k; jumpTo(S.sel); });
+}
+function nudge(d) {
+  const m = S[S.tgt]; if (!m) return;
+  const i = PH.indexOf(S.sel);
+  const lo = i > 0 ? m.phases[PH[i-1]] + 1 : 0, hi = i < PH.length - 1 ? m.phases[PH[i+1]] - 1 : m.samples.length - 1;
+  m.phases[S.sel] = Math.max(lo, Math.min(hi, m.phases[S.sel] + d));
+  onPhaseChange(); jumpTo(S.sel);
+}
+$('#n-').onclick = () => nudge(-1);
+$('#n+').onclick = () => nudge(1);
+$('#mark').onclick = () => {
+  const m = S.me, i = PH.indexOf(S.sel);
+  const lo = i > 0 ? m.phases[PH[i-1]] + 1 : 0, hi = i < PH.length - 1 ? m.phases[PH[i+1]] - 1 : m.samples.length - 1;
+  m.phases[S.sel] = Math.max(lo, Math.min(hi, idxAt(m, m.video.currentTime)));
+  onPhaseChange();
+};
+$('#tgt').onclick = e => { const b = e.target.closest('button'); if (!b || b.disabled) return; S.tgt = b.dataset.t; document.querySelectorAll('#tgt button').forEach(x => x.classList.toggle('on', x === b)); };
+$('#mark').title = 'Fija la fase seleccionada en el cuadro actual de tu video';
+
+$('#play').onclick = () => {
+  const v = S.me.video;
+  if (v.paused) { if (v.ended || v.currentTime >= v.duration - 0.05) v.currentTime = 0; v.playbackRate = +$('#rate').value; v.play(); } else v.pause();
+};
+$('#rate').onchange = () => { S.me.video.playbackRate = +$('#rate').value; };
+$('#prev').onclick = () => { const v = S.me.video; v.pause(); v.currentTime = Math.max(0, v.currentTime - S.me.step); };
+$('#next').onclick = () => { const v = S.me.video; v.pause(); v.currentTime = Math.min(v.duration, v.currentTime + S.me.step); };
+$('#seek').oninput = e => { S.me.video.currentTime = +e.target.value; };
+$('#seek').addEventListener('pointerdown', () => S.dragging = true);
+window.addEventListener('pointerup', () => S.dragging = false);
+$('#mirror').onchange = () => { if (S.me) { align(); renderMetrics(); } };
+$('#again').onclick = () => {
+  for (const m of [S.me, S.ref]) if (m) { m.video.pause(); m.video.remove(); }
+  S.me = S.ref = S.T = null;
+  $('#stage').hidden = true; $('#setup').hidden = false; $('#prog').hidden = true;
+};
+
+/* ---------- flujo principal ---------- */
+async function build(file, step, label) {
+  const video = await loadVideo(file);
+  const m = { video, W: video.videoWidth, H: video.videoHeight, dur: video.duration, step };
+  m.samples = await analyze(video, step, label);
+  m.phases = detectPhases(m);
+  return m;
+}
+$('#go').onclick = async () => {
+  err(''); $('#go').disabled = true;
+  try {
+    setProg(0, 'Cargando modelo de pose…');
+    await getLandmarker();
+    const step = 1 / +$('#fps').value;
+    const me = await build($('#fMe').files[0], step, 'Analizando tu swing');
+    me.view = $('#view').value; me.hand = $('#hand').value;
+    let ref = null;
+    if ($('#fRef').files[0]) { ref = await build($('#fRef').files[0], step, 'Analizando la referencia'); ref.view = me.view; }
+    S.me = me; S.ref = ref; S.sel = 'top'; S.tgt = 'me';
+    S.k = Math.min(1, 960 / me.W);
+    cv.width = Math.round(me.W * S.k); cv.height = Math.round(me.H * S.k);
+    $('#seek').max = me.dur;
+    $('#refTools').hidden = !ref; $('#legRef').hidden = !ref; $('#tgtRef').hidden = !ref;
+    document.querySelectorAll('#tgt button').forEach(x => x.classList.toggle('on', x.dataset.t === 'me'));
+    buildChips(); align(); renderMetrics();
+    $('#setup').hidden = true; $('#stage').hidden = false;
+    me.video.onplay = () => $('#play').textContent = '❚❚';
+    me.video.onpause = me.video.onended = () => $('#play').textContent = '▶';
+    me.video.currentTime = me.samples[me.phases.address].t;
+  } catch (e) {
+    err(e.message || 'Algo falló al analizar. Revisa tu conexión (el modelo se descarga la primera vez) e inténtalo de nuevo.');
+    $('#prog').hidden = true;
+  }
+  $('#go').disabled = !$('#fMe').files[0];
+};
+requestAnimationFrame(frame);
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
